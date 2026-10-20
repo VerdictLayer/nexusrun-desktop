@@ -75,7 +75,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: nexusrun-studio-${{ matrix.triple }}
-          path: src-tauri/target/${{ matrix.triple }}/release/bundle/*/*
+          path: |
+            src-tauri/target/${{ matrix.triple }}/release/bundle/**/*.deb
+            src-tauri/target/${{ matrix.triple }}/release/bundle/**/*.AppImage
+            src-tauri/target/${{ matrix.triple }}/release/bundle/**/*.dmg
+            src-tauri/target/${{ matrix.triple }}/release/bundle/**/*.msi
+            src-tauri/target/${{ matrix.triple }}/release/bundle/**/*-setup.exe
           if-no-files-found: error
 
   release:
@@ -92,7 +97,11 @@ jobs:
 
       - name: Checksums
         working-directory: dist
-        run: sha256sum * > SHA256SUMS
+        run: |
+          find . -mindepth 2 -type f -exec mv -t . {} +
+          find . -mindepth 1 -type d -empty -delete
+          find . -maxdepth 1 -type f ! -name SHA256SUMS -printf '%P\n' | sort | xargs -d '\n' sha256sum > SHA256SUMS
+          cat SHA256SUMS
 
       - uses: softprops/action-gh-release@v2
         with:
