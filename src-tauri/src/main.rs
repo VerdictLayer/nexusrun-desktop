@@ -36,7 +36,7 @@ fn main() {
         .manage(Engine(Mutex::new(None)))
         .setup(|app| {
             let mut child = Command::new(engine_path())
-                .args(["studio", "--no-browser", "--workspace"])
+                .args(["studio", "--no-browser", "--quit-when-closed", "--workspace"])
                 .arg(workspace())
                 .stdout(Stdio::piped())
                 .stderr(Stdio::null())
@@ -63,14 +63,14 @@ fn main() {
             });
             Ok(())
         })
-        .on_window_event(|win, event| {
-            if let tauri::WindowEvent::Destroyed = event {
-                if let Some(mut c) = win.state::<Engine>().0.lock().unwrap().take() {
+        .build(tauri::generate_context!())
+        .expect("failed to build NexusRun Studio")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                if let Some(mut c) = app.state::<Engine>().0.lock().unwrap().take() {
                     let _ = c.kill();
                     let _ = c.wait();
                 }
             }
-        })
-        .run(tauri::generate_context!())
-        .expect("failed to run NexusRun Studio");
+        });
 }

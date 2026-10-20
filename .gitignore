@@ -2,3 +2,4 @@ target
 src-tauri/target
 src-tauri/binaries
 src-tauri/gen
+.cargo-cache
