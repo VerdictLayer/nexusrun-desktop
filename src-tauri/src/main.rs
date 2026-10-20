@@ -32,6 +32,12 @@ fn workspace() -> PathBuf {
 }
 
 fn main() {
+    // WebKitGTK's GPU buffer path aborts on some drivers ("Could not create GBM
+    // EGL display"). Turn it off unless the user has chosen otherwise.
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none() {
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+    }
     tauri::Builder::default()
         .manage(Engine(Mutex::new(None)))
         .setup(|app| {
